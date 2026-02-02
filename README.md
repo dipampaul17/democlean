@@ -46,8 +46,8 @@ Flagged (lowest MI)
 
 MI quantifies how predictable actions are given states.
 
-**High MI** → actions are temporally smooth, low jerk, purposeful
-**Low MI** → actions are jerky, hesitant, inconsistent timing
+- **High MI** → smooth, purposeful motion
+- **Low MI** → jerky, hesitant, inconsistent
 
 This is useful because motion quality correlates with demonstration quality. But MI is not a direct measure of task success—it measures *how* the robot moved, not *what* it achieved.
 
@@ -84,6 +84,19 @@ democlean analyze lerobot/pusht --keep 0.8 -r report.json
 2. **Not task success**: MI measures motion smoothness, not whether the task was completed. Use task-specific metrics for that.
 
 3. **Sample size**: Works best with 50+ episodes. Small datasets may not show meaningful variation.
+
+## When to Use
+
+**Good fit:**
+- Human teleoperation data (quality varies by demonstrator)
+- Single task, single robot
+- 50+ episodes
+- Quick triage before training
+
+**Not a good fit:**
+- Scripted simulation data (already uniform)
+- Multi-task datasets (MI biases toward easy tasks)
+- You need task success metrics
 
 ## Python API
 
