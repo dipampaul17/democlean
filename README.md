@@ -1,6 +1,12 @@
 # democlean
 
-Score robot demonstrations by motion quality. Identify jerky, inconsistent episodes before training.
+Quality scoring for robot demonstration datasets.
+
+## The Problem
+
+Robot learning datasets often contain bad demonstrations—jerky movements, hesitation, inconsistent timing. Training on these hurts policy performance. Manual review doesn't scale.
+
+democlean automatically scores episodes by motion quality using mutual information (MI) between states and actions. Episodes with smooth, purposeful motion score high. Jerky, inconsistent episodes score low.
 
 ## Install
 
@@ -8,70 +14,72 @@ Score robot demonstrations by motion quality. Identify jerky, inconsistent episo
 pip install democlean
 ```
 
-## Usage
+## Quick Start
 
 ```bash
-# Score a dataset
 democlean analyze lerobot/pusht
-
-# Keep top 80%
-democlean analyze lerobot/pusht --keep 0.8 -r report.json
-
-# Filter by threshold
-democlean analyze lerobot/pusht --min-mi 2.0
-
-# Normalize by episode length
-democlean analyze lerobot/pusht --normalize-length --keep 0.8
 ```
 
-## Output
-
+Output:
 ```
-democlean 0.1.0
-
 Dataset lerobot/pusht
-Episodes: 50 | Dims: 2->2
+Episodes: 50 | Dims: 2→2
 
 Distribution
-  ███████████████████████████████  High   30
-  ██████████                       Medium 15
-  █████                            Low     5
+  ████████████████████  High   30
+  ██████████            Medium 15
+  █████                 Low     5
 
 Mean   2.55   (typical for human teleop)
 Std    0.27
-Range  [1.90, 3.04]
 
 Flagged (lowest MI)
   ep  46  1.897
   ep   6  1.984
 ```
 
-## How It Works
+## What MI Measures
 
-democlean computes Mutual Information (MI) between states and actions using the KSG estimator.
+MI quantifies how predictable actions are given states.
 
-**High MI indicates:**
-- Temporally smooth actions
-- Low jerk motion
-- Purposeful movement
+**High MI** → actions are temporally smooth, low jerk, purposeful
+**Low MI** → actions are jerky, hesitant, inconsistent timing
 
-**Low MI indicates:**
-- Jerky, hesitant motion
-- Inconsistent action timing
+This is useful because motion quality correlates with demonstration quality. But MI is not a direct measure of task success—it measures *how* the robot moved, not *what* it achieved.
 
-**Limitations:**
-- MI correlates with episode length (r~0.8). Use `--normalize-length` to account for this.
-- Does not detect task failure. Use task-specific metrics for that.
-- Works best with 50+ episodes.
+### Score Ranges
 
-## Interpreting Scores
+| MI | Interpretation |
+|----|----------------|
+| >3.0 | Very smooth |
+| 2.0–3.0 | Typical human teleop |
+| 1.0–2.0 | Moderate |
+| <1.0 | Noisy/random |
 
-| MI Range | Meaning |
-|----------|---------|
-| > 3.0 | Very smooth, consistent |
-| 2.0 - 3.0 | Typical human teleop |
-| 1.0 - 2.0 | Moderate quality |
-| < 1.0 | Noisy or random |
+## Filtering Episodes
+
+Keep top 80%:
+```bash
+democlean analyze lerobot/pusht --keep 0.8
+```
+
+Drop below threshold:
+```bash
+democlean analyze lerobot/pusht --min-mi 2.0
+```
+
+Save report:
+```bash
+democlean analyze lerobot/pusht --keep 0.8 -r report.json
+```
+
+## Limitations
+
+1. **Length correlation**: MI correlates with episode length (r≈0.8). Longer episodes score higher. Use `--normalize-length` to adjust.
+
+2. **Not task success**: MI measures motion smoothness, not whether the task was completed. Use task-specific metrics for that.
+
+3. **Sample size**: Works best with 50+ episodes. Small datasets may not show meaningful variation.
 
 ## Python API
 
@@ -80,32 +88,29 @@ from democlean import DemoScorer
 
 scorer = DemoScorer(k=3)
 scores = scorer.score_dataset("lerobot/pusht")
+
+# Filter
 keep = scorer.filter_top_k(scores, percentile=80)
+print(f"Keep episodes: {keep}")
 ```
 
-## CLI Options
+## CLI Reference
 
-| Flag | Description |
-|------|-------------|
-| `--keep R` | Keep top R ratio (0-1) |
-| `--top-k K` | Keep top K episodes |
-| `--min-mi T` | Drop episodes below threshold T |
-| `--normalize-length` | Normalize MI by episode length |
-| `-k N` | KSG neighbors (default: 3) |
-| `--max-dim D` | PCA reduce states to D dimensions |
-| `--ci` | Compute 95% confidence intervals |
-| `-r FILE` | Save JSON report |
-| `-q` | Quiet mode |
-| `--explain` | Show detailed explanation |
+```
+democlean analyze <dataset> [options]
 
-## Comparison with score_lerobot_episodes
-
-| Tool | Detects |
-|------|---------|
-| `score_lerobot_episodes` | Visual issues (blur, jitter) |
-| `democlean` | Motion issues (jerky, inconsistent) |
-
-They complement each other.
+Options:
+  --keep R            Keep top R fraction (0-1)
+  --top-k K           Keep top K episodes
+  --min-mi T          Drop episodes below MI threshold
+  --normalize-length  Adjust for episode length
+  -k N                KSG neighbors (default: 3)
+  --max-dim D         PCA reduce to D dimensions
+  --ci                Bootstrap confidence intervals
+  -r FILE             Save JSON report
+  -q                  Quiet mode (JSON output only)
+  --explain           Show interpretation guide
+```
 
 ## License
 
