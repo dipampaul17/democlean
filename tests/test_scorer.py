@@ -92,8 +92,8 @@ class TestDemoScorer:
         score = scorer.score_episode(states, actions, episode_index=0)
 
         assert score.mi_score >= 0
-        # Original dim should be recorded
-        assert score.state_dim == 10  # Reduced
+        # Original input dim should be recorded (before reduction)
+        assert score.state_dim == 50  # Original, not reduced
 
     def test_filter_top_k(self):
         """Test filtering top K episodes."""

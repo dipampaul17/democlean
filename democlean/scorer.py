@@ -3,12 +3,15 @@
 from __future__ import annotations
 
 from dataclasses import dataclass, field
-from typing import Iterator
+from typing import TYPE_CHECKING, Iterator
 
 import numpy as np
 from numpy.typing import NDArray
 
 from democlean.mi import estimate_mi, estimate_mi_with_ci, reduce_dimensions
+
+if TYPE_CHECKING:
+    from democlean.embeddings.base import Encoder
 
 
 @dataclass
@@ -64,6 +67,7 @@ class DemoScorer:
         action_key: str = "action",
         max_state_dim: int | None = None,
         bootstrap_ci: bool = False,
+        encoder: "Encoder | None" = None,
     ):
         """Initialize scorer.
 
@@ -74,6 +78,7 @@ class DemoScorer:
             action_key: Action key in dataset
             max_state_dim: Reduce state dim with PCA if exceeded
             bootstrap_ci: Compute 95% confidence intervals
+            encoder: Embedding encoder (default: RawEmbedding)
         """
         self.k = k
         self.temporal_window = temporal_window
@@ -81,6 +86,12 @@ class DemoScorer:
         self.action_key = action_key
         self.max_state_dim = max_state_dim
         self.bootstrap_ci = bootstrap_ci
+
+        # Set up encoder (lazy import to avoid circular deps)
+        if encoder is None:
+            from democlean.embeddings import RawEmbedding
+            encoder = RawEmbedding()
+        self.encoder = encoder
 
     def score_episode(
         self,
@@ -90,7 +101,14 @@ class DemoScorer:
         metadata: dict | None = None,
     ) -> EpisodeScore:
         """Score a single episode."""
-        # Reduce dimensions if needed
+        # Store original dimensions for metadata
+        orig_state_dim = states.shape[1] if states.ndim > 1 else 1
+        orig_action_dim = actions.shape[1] if actions.ndim > 1 else 1
+
+        # Encode states and actions
+        states, actions = self.encoder.encode_episode(states, actions)
+
+        # Reduce dimensions if needed (after encoding)
         if self.max_state_dim and states.shape[1] > self.max_state_dim:
             states = reduce_dimensions(states, self.max_state_dim)
 
@@ -104,15 +122,19 @@ class DemoScorer:
             )
             ci_lo, ci_hi = None, None
 
+        # Build metadata with encoder info
+        meta = metadata or {}
+        meta["encoder"] = self.encoder.name
+
         return EpisodeScore(
             episode_index=episode_index,
             mi_score=mi,
             length=len(states),
-            state_dim=states.shape[1] if states.ndim > 1 else 1,
-            action_dim=actions.shape[1] if actions.ndim > 1 else 1,
+            state_dim=orig_state_dim,
+            action_dim=orig_action_dim,
             ci_lower=ci_lo,
             ci_upper=ci_hi,
-            metadata=metadata or {},
+            metadata=meta,
         )
 
     def score_dataset(

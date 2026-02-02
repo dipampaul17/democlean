@@ -7,7 +7,7 @@ import json
 import sys
 from pathlib import Path
 
-VERSION = "0.1.5"
+VERSION = "0.2.0"
 
 
 def main(argv: list[str] | None = None) -> int:
@@ -45,6 +45,24 @@ def main(argv: list[str] | None = None) -> int:
     )
     p.add_argument(
         "--explain", action="store_true", help="Show detailed explanation of results"
+    )
+    p.add_argument(
+        "--encoder",
+        choices=["raw", "hpt"],
+        default="raw",
+        help="Embedding encoder: 'raw' (default) or 'hpt' (requires torch)",
+    )
+    p.add_argument(
+        "--hpt-model",
+        choices=["small", "base", "large"],
+        default="base",
+        help="HPT model size (default: base)",
+    )
+    p.add_argument(
+        "--device",
+        type=str,
+        default=None,
+        help="Device for HPT encoder (cuda/cpu, default: auto)",
     )
 
     args = parser.parse_args(argv)
@@ -91,11 +109,28 @@ def run_analyze(args: argparse.Namespace) -> int:
 
     con.print(f"[bold]Dataset[/] {args.dataset}")
 
+    # Set up encoder
+    from democlean.embeddings import get_encoder
+
+    try:
+        encoder = get_encoder(
+            args.encoder,
+            model_size=getattr(args, "hpt_model", "base"),
+            device=getattr(args, "device", None),
+        )
+    except ImportError as e:
+        con.print(f"[red]Error:[/] {e}")
+        return 1
+
+    if not quiet and args.encoder != "raw":
+        con.print(f"[dim]Encoder: {encoder.name}[/]")
+
     # Score
     scorer = DemoScorer(
         k=args.k,
         max_state_dim=args.max_dim,
         bootstrap_ci=args.ci,
+        encoder=encoder,
     )
 
     try:
