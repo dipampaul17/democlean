@@ -120,7 +120,7 @@ Options:
 
 Built on the KSG mutual information estimator ([Kraskov et al., 2004](https://journals.aps.org/pre/abstract/10.1103/PhysRevE.69.066138)).
 
-Complements [score_lerobot_episodes](https://github.com/huggingface/lerobot/tree/main/lerobot/scripts) which catches visual issues—democlean catches motion issues.
+Complements [score_lerobot_episodes](https://github.com/RoboticsData/score_lerobot_episodes) which catches visual issues—democlean catches motion issues.
 
 ## License
 
