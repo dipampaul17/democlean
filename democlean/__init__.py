@@ -1,6 +1,6 @@
 """democlean: Score robot demonstrations by motion quality."""
 
-__version__ = "0.1.0"
+__version__ = "0.1.1"
 
 from democlean.mi import (
     estimate_mi,
