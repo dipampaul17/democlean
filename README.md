@@ -1,5 +1,9 @@
 # democlean
 
+[![PyPI](https://img.shields.io/pypi/v/democlean.svg)](https://pypi.org/project/democlean/)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+[![Python 3.10+](https://img.shields.io/badge/python-3.10+-blue.svg)](https://www.python.org/downloads/)
+
 Quality scoring for robot demonstration datasets.
 
 ## The Problem
@@ -111,6 +115,12 @@ Options:
   -q                  Quiet mode (JSON output only)
   --explain           Show interpretation guide
 ```
+
+## Credits
+
+Built on the KSG mutual information estimator ([Kraskov et al., 2004](https://journals.aps.org/pre/abstract/10.1103/PhysRevE.69.066138)).
+
+Complements [score_lerobot_episodes](https://github.com/huggingface/lerobot/tree/main/lerobot/scripts) which catches visual issues—democlean catches motion issues.
 
 ## License
 
