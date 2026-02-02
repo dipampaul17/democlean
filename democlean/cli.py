@@ -7,7 +7,7 @@ import json
 import sys
 from pathlib import Path
 
-VERSION = "0.1.1"
+VERSION = "0.1.2"
 
 
 def main(argv: list[str] | None = None) -> int:

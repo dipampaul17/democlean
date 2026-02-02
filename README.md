@@ -118,7 +118,7 @@ Options:
 
 ## Credits
 
-Built on the KSG mutual information estimator ([Kraskov et al., 2004](https://journals.aps.org/pre/abstract/10.1103/PhysRevE.69.066138)).
+Inspired by [DemInf](https://arxiv.org/abs/2502.08623) (Hejna et al., RSS 2025).
 
 Complements [score_lerobot_episodes](https://github.com/RoboticsData/score_lerobot_episodes) which catches visual issues—democlean catches motion issues.
 
