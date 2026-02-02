@@ -1,0 +1,96 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+MANIFEST
+
+# Virtual environments
+.venv/
+venv/
+ENV/
+env/
+.env
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+*~
+.project
+.pydevproject
+.settings/
+
+# Testing
+.coverage
+.pytest_cache/
+htmlcov/
+.tox/
+.nox/
+coverage.xml
+*.cover
+.hypothesis/
+
+# Linting
+.ruff_cache/
+.mypy_cache/
+.dmypy.json
+dmypy.json
+
+# Build
+*.manifest
+*.spec
+
+# Jupyter
+.ipynb_checkpoints/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Local dev files
+*.log
+*.tmp
+*.bak
+*.swp
+*~
+
+# Sensitive files
+.env
+.env.*
+*.pem
+*.key
+secrets.*
+credentials.*
+config.local.*
+
+# Generated files
+*.json
+!pyproject.json
+*.csv
+*.parquet
+
+# Benchmark/experiment files
+benchmark*.json
+experiment*/
+validation*/
+*_results.json
+EVALUATION*.md
+VALIDATION*.md
